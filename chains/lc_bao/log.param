@@ -1,0 +1,45 @@
+#-----CLASS v3.2.0 (branch: , hash: )-----
+
+# Data experiments
+data.experiments=['bao_boss_dr12','bao_smallz_2014']
+
+# Cosmological parameters
+data.parameters['Omega_cdm'] = [0.3, 0, None, 0.05, 1, 'cosmo']
+data.parameters['Omega_k'] = [0.0, -0.5,0.5, 0.05, 1, 'cosmo']
+data.parameters['Omega_b'] = [0.045, 0, None, 0.0, 1, 'cosmo']
+data.parameters['h'] = [0.68, 0, None, 0, 1, 'cosmo']
+
+# Derived parameters
+data.parameters['Omega_Lambda'] = [1,None,None,0, 1, 'derived']
+
+# Fixed values
+data.cosmo_arguments['YHe'] = 0.24
+
+# Run details
+data.N=10
+data.write_step=5
+
+#-----Likelihood-bao_boss_dr12-----
+bao_boss_dr12.data_directory = '/home/errez/code/montepython/data'
+bao_boss_dr12.data_file = 'COMBINEDDR12_BAO_consensus_dM_Hz/BAO_consensus_results_dM_Hz.txt'
+bao_boss_dr12.cov_file = 'COMBINEDDR12_BAO_consensus_dM_Hz/BAO_consensus_covtot_dM_Hz.txt'
+bao_boss_dr12.rs_rescale = 1.0
+bao_boss_dr12.rd_fid_in_Mpc = 147.78
+
+
+#-----Likelihood-bao_smallz_2014-----
+bao_smallz_2014.data_directory = '/home/errez/code/montepython/data'
+bao_smallz_2014.file = 'bao_smallz_2014.txt'
+bao_smallz_2014.exclude = []
+
+
+#-----------Cosmological-arguments---------
+data.cosmo_arguments.update({'YHe': 0.24})
+
+
+#--------Default-Configuration------
+data.path['root']	= '/home/errez/code/montepython'
+data.path['MontePython']	= '/home/errez/code/montepython/montepython'
+data.path['data']	= '/home/errez/code/montepython/data'
+data.path['cosmo']	= '/home/errez/class'
+data.path['clik']	= '/home/errez/planck/code/plc_3.0/plc-3.01'
