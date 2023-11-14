@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import yaml
 
 from getdist import loadMCSamples, plots, mcsamples, MCSamples
-from tensiometer import utilities
-from tensiometer import gaussian_tension
+from tensiometer_dev.tensiometer import *
 
-def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), params=[], labels=[], log=False, print_improvement=False):
+def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), params=[], labels=[], 
+                     log=False, print_improvement=False, norm=True):
     # Non-logarithmic effective number of parameters
     print(f'Non-log N_eff \t= {gaussian_tension.get_Neff(posterior_chain, prior_chain=prior_chain, param_names=params):.5}\n')
     KL_param_names = params
@@ -44,6 +44,11 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
     KL_param_names, KL_eig, fractional_fisher, _ = gaussian_tension.Q_UDM_fisher_components(prior_chain, posterior_chain, 
                                                                                             KL_param_names, 
                                                                                             which='1')
+    # Use alternative version (normalized column sum)
+    if norm:
+        dict = gaussian_tension.linear_CPCA_chains(prior_chain, posterior_chain, param_names=params)
+        KL_eig, KL_eigv, fractional_fisher = dict['CPCA_eig'], dict['CPCA_eigv'], dict['CPCA_var_contributions']
+
     # Plot (showing values and names)
     figsize = int(len(params)/1.6)
     plt.figure(figsize=(figsize, figsize))
