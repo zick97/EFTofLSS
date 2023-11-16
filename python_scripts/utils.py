@@ -25,7 +25,7 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
             log_params += ['log_'+name]
             log_labels += ['\\log '+label]
         # Logarithmic effective number of parameters
-        print(f'Non-log N_eff \t= {gaussian_tension.get_Neff(posterior_chain, prior_chain, param_names=log_params):.5}\n')
+        print(f'Log N_eff \t= {gaussian_tension.get_Neff(posterior_chain, prior_chain, param_names=log_params):.5}\n')
         KL_param_names = log_params
     
     # Compute the KL modes
@@ -45,6 +45,7 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
                                                                                             KL_param_names, 
                                                                                             which='1')
     # Use alternative version (normalized column sum)
+    # Eigenvalues and eigenvectors of the KL-decomposed Fisher matrix are not changed
     if norm:
         dict = gaussian_tension.linear_CPCA_chains(prior_chain, posterior_chain, param_names=params)
         fractional_fisher = dict['CPCA_var_contributions']
