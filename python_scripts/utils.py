@@ -47,7 +47,7 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
     # Use alternative version (normalized column sum)
     if norm:
         dict = gaussian_tension.linear_CPCA_chains(prior_chain, posterior_chain, param_names=params)
-        KL_eig, KL_eigv, fractional_fisher = dict['CPCA_eig'], dict['CPCA_eigv'], dict['CPCA_var_contributions']
+        fractional_fisher = dict['CPCA_var_contributions']
 
     # Plot (showing values and names)
     figsize = int(len(params)/1.6)
