@@ -1,6 +1,6 @@
 import os, sys
-# Define chain folder
-chain_dir = os.path.join(os.getcwd(), 'chains')
+# Define chain folder: change it as you need in the function calls
+chain_dir = os.path.join(os.getcwd(), 'chains/perlmutter')
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -26,10 +26,9 @@ from classy import Class
 from tqdm import tqdm
 import re
 class priorChain():
-    def __init__(self, filepath='', input_name=''):
-        self.filepath = filepath
-        self.root_dir = '/home/errez/code/montepython/input/'
-        self.input_name = input_name
+    def __init__(self, root_dir=chain_dir, chain_name=''):
+        self.root_dir = root_dir
+        self.chain_name = chain_name
         # Initialize various useful arrays
         self.names, self.labels, self.params = [], [], {}
         self.cosmo_names, self.cosmo_labels = [], []
@@ -39,8 +38,9 @@ class priorChain():
     
     def get_names(self):
         names, labels = [], []
+        file = self.root_dir+self.chain_name+'.paramnames'
         try:
-            with open(self.filepath, 'r') as f:
+            with open(file, 'r') as f:
                 lines = f.readlines()[:]
                 for l, line in enumerate(lines):
                     # Split each line into words using space-tab-space as a delimiter
@@ -54,7 +54,7 @@ class priorChain():
                 return names, labels
         
         except FileNotFoundError:
-            print(f'File not found: {self.filepath}')
+            print(f'File not found: {file}')
             return None
         
     def build_flat(self, n=10000, array=[]):
@@ -106,8 +106,9 @@ class priorChain():
     def get_params(self):
         names, _ = self.get_names()
         params = {}
+        root_dir = self.root_dir+'/log.param'
         try:
-            with open(self.root_dir+self.input_name+'.param', mode='r') as f:
+            with open(root_dir, mode='r') as f:
                 f_content = f.read()
                 for name in names:
                     prior_array = []
@@ -128,7 +129,7 @@ class priorChain():
                     params[name] = num_array
             f.close()
         except FileNotFoundError:
-            print(f'File not found at the following path: {self.root_dir+self.input_name}')
+            print(f'File not found at the following path: {root_dir}')
         self.params = params
         return self.params
     
@@ -151,7 +152,7 @@ class priorChain():
         return param_limits
 
     # Build the chain using scipy
-    def get_cosmo_prior(self, n=10000):
+    def get_cosmo_prior(self, n=10000, ignore_rows=0.3):
         params = self.get_params()
         ranges, chain_array = {}, []
         for name, label in zip(self.names, self.labels):
@@ -181,6 +182,7 @@ class priorChain():
                 
         self.cosmo_prior = MCSamples(samples=np.transpose(chain_array), 
                                     names=self.cosmo_names, labels=self.cosmo_labels, 
+                                    ignore_rows=ignore_rows,
                                     ranges=ranges)
         return self.cosmo_prior
     
@@ -218,11 +220,10 @@ class priorChain():
                     self.dv_labels.append(label)
         return self.cosmo_prior
         
-    def get_nuisance_prior(self, n=10000, config_name='', ignore_rows=0.):
+    def get_nuisance_prior(self, n=10000, config_name='', ignore_rows=0.3):
         self.get_params()
         ranges = {}
-        root_dir = '/home/errez/code/montepython/data/eftboss/config/'
-        file = yaml.full_load(open(root_dir+config_name+'.yaml', 'r'))
+        file = yaml.full_load(open(self.root_dir+config_name+'.yaml', 'r'))
         chain_array, eft_params = [], []
         # Since the data file could contain up to 4 sky cuts, we build a prior distribution 
         # for each sky cut
