@@ -1,6 +1,5 @@
 import os, sys
 # Define chain folder: change it as you need in the function calls
-chain_dir = os.path.join(os.getcwd(), 'chains/perlmutter')
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -26,7 +25,7 @@ from classy import Class
 from tqdm import tqdm
 import re
 class priorChain():
-    def __init__(self, root_dir=chain_dir, chain_name=''):
+    def __init__(self, root_dir='', chain_name=''):
         self.root_dir = root_dir
         self.chain_name = chain_name
         # Initialize various useful arrays
@@ -80,14 +79,14 @@ class priorChain():
     # Function that implements Class to compute the value of the prior on sigma8
     # The idea is to call the same Class instance used in the EFT predictions, passing
     # as 'cosmology' parameters each line of the cosmo_prior chains previously generated
-    def get_sigma8(self):
+    def get_sigma8(self, size=10000):
         M = Class()
         M.set({'output': 'mPk', 'P_k_max_h/Mpc': 10, 'z_max_pk': 1})
 
         p = self.cosmo_prior.getParams()
         # Faster than .append()
-        sigma8_array = np.empty(10000)  
-        for i in tqdm(range(10000), desc='Computing sigma8: ', bar_format='{l_bar}{bar:30}{r_bar}{bar:-10b}'):
+        sigma8_array = np.empty(size)  
+        for i in tqdm(range(size), desc='Computing sigma8: ', bar_format='{l_bar}{bar:30}{r_bar}{bar:-10b}'):
             try:
                 omega_b = p.omega_b[i] * 10**(-2)
                 omega_cdm = p.omega_cdm[i]
@@ -214,7 +213,7 @@ class priorChain():
                         else:
                             print(f'Something went wrong with the parameter {name}.')
                     if (name == 'sigma8') & (include_class == True):
-                        self.cosmo_prior.addDerived(self.get_sigma8(), name=name, label=label)
+                        self.cosmo_prior.addDerived(self.get_sigma8(size=len(self.cosmo_prior[0])), name=name, label=label)
                     # Update at the end to check for repeating names
                     self.dv_names.append(name)
                     self.dv_labels.append(label)
