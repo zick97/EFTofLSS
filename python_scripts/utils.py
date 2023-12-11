@@ -7,6 +7,15 @@ import yaml
 from getdist import loadMCSamples, plots, mcsamples, MCSamples
 from tensiometer_dev.tensiometer import *
 
+# Plot the fractional Fisher Matrix, along with the effective number of parameters
+# Arguments:
+#   - prior_chain = MCSamples() object containing the prior distribution chain
+#   - posterior_chain = MCSamples() object containing the posterior distribution chain
+#   - params, labels = string arrays containing parameters' names and labels
+#   - log = whether to apply a logarithmic transformation to the input chains
+#   - print_improvement = whether to print the improvement factor of the posterior over the prior
+#   - norm = whether to use the CPCA decomposition for the Fisher Matrix, in order to have rows and columns 
+#     with normalized sum
 def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), params=[], labels=[], 
                      log=False, print_improvement=False, norm=True):
     # Non-logarithmic effective number of parameters
@@ -75,3 +84,77 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
     plt.yticks(ticks, labels, horizontalalignment='right');
 
     return KL_eig, KL_eigv, KL_param_names
+
+from python_scripts.prior import *
+# Build the full MCSamples() prior chain
+# Arguments:
+#   - n = size of the chains,
+#   - root_dir = full path to the directory containing the log.param file and the chains
+#   - chain_name = prefix used to name the chain files
+#   - ignore_rows = burn-in fraction 
+#   - name_tag = name of the prior chain to be displayed on the plots
+def full_prior(n=10000, root_dir='', chain_name='', config_name='', ignore_rows=0.3, name_tag=''):
+    prior = priorChain(n=n, root_dir=root_dir, chain_name=chain_name)
+    # If the cosmo_prior chain has already been computed and saved, there's no need to do it again
+    # Remember that, if you change the parameter or the configuration file, the prior distribution
+    # needs to change as well, therefore you can remove these files. 
+    # However, if you vary any of the parameter's prior, you should also repeat the posterior sampling
+    if os.path.exists(root_dir+'cosmo_prior_.txt'):
+        pass
+    else:
+        cosmo_prior = prior.get_dv_prior(include_class=True)
+        cosmo_prior.saveAsText(root=root_dir+'/cosmo_prior_')
+
+    try:
+        cosmo_prior = loadMCSamples(file_root=root_dir+'/cosmo_prior_', no_cache=True)
+    except FileNotFoundError:
+        print(f'The chain files named {root_dir}/cosmo_prior_[...] can not be found!')
+        return 0, 0
+
+    # Nuisance Parameters (varying): repeat the same size and burn-in fraction used for the cosmo_prior object
+    try:
+        nuisance_prior = prior.get_nuisance_prior(config_name=config_name, ignore_rows=0.3)
+    except FileNotFoundError:
+        print(f'The config file named {root_dir+config_name}.yaml can not be found!')
+        return 0, 0
+    # Check completeness
+    print(f'List of \"cosmological\" parameters: {cosmo_prior.getParamNames().getRunningNames()}')
+    print(f'List of \"derived\"      parameters: {cosmo_prior.getParamNames().getDerivedNames()}')
+    print(f'List of \"nuisance\"     parameters: {nuisance_prior.getParamNames().list()}')
+
+    # Loading both cosmological and EFT parameters
+    prior_chain = cosmo_prior.copy()
+    p = nuisance_prior.getParams()
+    for name, label in zip(prior.nuisance_names, prior.nuisance_labels):
+        method = getattr(p, name)
+        prior_chain.addDerived(method, name=name, label=label)
+    prior_chain.name_tag = name_tag
+    # Return param_limits and prior chain
+    param_limits = prior.get_param_limits()
+    params = list(param_limits)
+    limits = list(param_limits.values())
+    print('\nFixed Parameter Limits:')
+    print(create_table(params, limits))
+    return param_limits, prior_chain
+
+# Create a nice-looking table to store multiple values from arrays with the same length.
+# Values on the same row have the same index in the lists. 
+def create_table(*lists):
+    # Ensure all lists have the same length
+    list_lengths = [len(lst) for lst in lists]
+    if len(set(list_lengths)) != 1:
+        return "Error: lists are not of the same length"
+
+    # Combine all lists into one list of tuples
+    combined_lists = list(zip(*lists))
+
+    # Find the maximum length for each column (that is, each individual list)
+    max_lengths = [max(len(str(item)) for item in list) for list in lists]
+
+    # Create the table
+    table = ''
+    for row in combined_lists:
+        # Add elements for each row, adjusting the width for each column
+        table += ' | '.join(f'{str(item):<{max_len}}' for item, max_len in zip(row, max_lengths)) + '\n'
+
+    return table

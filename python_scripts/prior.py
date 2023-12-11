@@ -25,9 +25,10 @@ from classy import Class
 from tqdm import tqdm
 import re
 class priorChain():
-    def __init__(self, root_dir='', chain_name=''):
+    def __init__(self, n=10000, root_dir='', chain_name=''):
         self.root_dir = root_dir
         self.chain_name = chain_name
+        self.n = n
         # Initialize various useful arrays
         self.names, self.labels, self.params = [], [], {}
         self.cosmo_names, self.cosmo_labels = [], []
@@ -56,13 +57,13 @@ class priorChain():
             print(f'File not found: {file}')
             return None
         
-    def build_flat(self, n=10000, array=[]):
+    def build_flat(self, array=[]):
         low, high, scale = array[1], array[2], array[4]
         if (low == None) | (high == None):
             print('Need to expplicit both boundary values for the flat distribution.')
-        return np.random.uniform(low=low, high=high, size=n)
+        return np.random.uniform(low=low, high=high, size=self.n)
         
-    def build_gauss(self, n=10000, array=[], mean=0, sigma=0.1):
+    def build_gauss(self, array=[], mean=0, sigma=0.1):
         low, high, scale = array[1], array[2], array[4]
         mean /= scale
         sigma /= scale
@@ -71,9 +72,9 @@ class priorChain():
             if low == None: low = -np.inf
             if high == None: high = np.inf
             X = truncnorm((low - mean) / sigma, (high - mean) / sigma, loc=mean, scale=sigma)
-            X = X.rvs(n)
+            X = X.rvs(self.n)
         else:
-            X = norm.rvs(size=n, loc=mean, scale=sigma)
+            X = norm.rvs(size=self.n, loc=mean, scale=sigma)
         return X
     
     # Function that implements Class to compute the value of the prior on sigma8
@@ -147,11 +148,10 @@ class priorChain():
                 type = get_type(self.params[name][5])
                 if type == 'nuisance':
                     param_limits[name] = (self.params[name][1], self.params[name][2])
-        print('Fixed Parameter Limits:', param_limits)
         return param_limits
 
     # Build the chain using scipy
-    def get_cosmo_prior(self, n=10000, ignore_rows=0.3):
+    def get_cosmo_prior(self, ignore_rows=0.3):
         params = self.get_params()
         ranges, chain_array = {}, []
         for name, label in zip(self.names, self.labels):
@@ -173,9 +173,9 @@ class priorChain():
                             sigma = np.float32(params[name][8])
                         except IndexError:
                             print(f'Gaussian distribution for {name} missing mean or sigma.')
-                        chain_array.append(self.build_gauss(n=n, array=num_array, mean=mean, sigma=sigma))
+                        chain_array.append(self.build_gauss(array=num_array, mean=mean, sigma=sigma))
                     if dist == 'flat':
-                        chain_array.append(self.build_flat(n=n, array=num_array))
+                        chain_array.append(self.build_flat(array=num_array))
                 elif (type == 'cosmo') & (num_array[3] == 0):
                     print(f'{name} is not varying. Check the input parameter file.')
                 
@@ -219,7 +219,7 @@ class priorChain():
                     self.dv_labels.append(label)
         return self.cosmo_prior
         
-    def get_nuisance_prior(self, n=10000, config_name='', ignore_rows=0.3):
+    def get_nuisance_prior(self, config_name='', ignore_rows=0.3):
         self.get_params()
         ranges = {}
         file = yaml.full_load(open(self.root_dir+config_name+'.yaml', 'r'))
@@ -238,12 +238,12 @@ class priorChain():
                 eft_name = name.split('_')[0]
                 dist = file['eft_prior'][eft_name]['type']
                 if dist == 'flat':
-                    chain_array.append(self.build_flat(n=n, array=num_array))
+                    chain_array.append(self.build_flat(array=num_array))
                 if dist == 'gauss':
                     mean = file['eft_prior'][eft_name]['mean'][index]
                     sigma = file['eft_prior'][eft_name]['range'][index]
                     index += 1
-                    chain_array.append(self.build_gauss(n, num_array, mean=mean, sigma=sigma))
+                    chain_array.append(self.build_gauss(num_array, mean=mean, sigma=sigma))
         nuisance_prior = MCSamples(samples=np.transpose(chain_array), 
                                     names=self.nuisance_names, labels=self.nuisance_labels,
                                     ignore_rows=ignore_rows, 
