@@ -158,3 +158,8 @@ def create_table(*lists):
         table += ' | '.join(f'{str(item):<{max_len}}' for item, max_len in zip(row, max_lengths)) + '\n'
 
     return table
+
+# Alternative to numpy.where(), meant to be used with non-numpy arrays and string arrays.
+def find_index(list, condition):
+    # List comprehension is the faster procedure
+    return [i for i, elem in enumerate(list) if condition(elem)]
