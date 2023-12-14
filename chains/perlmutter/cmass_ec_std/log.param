@@ -1,0 +1,78 @@
+#-----CLASS v3.2.1 (branch: , hash: )-----
+
+#------Experiments to test (separated with commas)-----
+# To see all the available ones, please look in the
+# montepython/likelihoods folder. Every folder there is a valid likelihood to
+# test.
+data.experiments=['bbn_prior', 'eftboss']
+data.over_sampling=[1, 4]
+
+#------ Parameter list -------
+# data.parameters[class name] = [mean, min, max, 1-sigma, scale, role]
+# - if min max irrelevant, put to -1 or None (if you want a boundary of -1, use -1.0)
+# - if fixed, put 1-sigma to 0
+# - if scale irrelevant, put to 1, otherwise to the appropriate factor
+# - role is either 'cosmo', 'nuisance' or 'derived'
+
+# Cosmological parameters list
+data.parameters['omega_b']      = [ 2.268, 2.068, 2.468, 0.05, 0.01, 'cosmo']
+#data.prior['omega_b']          = ['gaussian', 0.02268, 0.00038]
+data.parameters['omega_cdm']    = [ 0.120, 0.080, 0.160, 0.01,    1, 'cosmo']
+#data.prior['omega_cdm']        = ['flat']
+data.parameters['h']            = [ 0.675, 0.635, 0.715, 0.01,    1, 'cosmo']
+#data.prior['h']                = ['flat']
+data.parameters['ln10^{10}A_s'] = [ 3.044, 2.644, 3.444, 0.10,    1, 'cosmo']
+#data.prior['ln10^{10}A_s']     = ['flat']
+data.parameters['n_s']          = [ 0.965, 0.765, 1.165, 0.05,    1, 'cosmo']
+#data.prior['n_s']              = ['flat']
+
+data.cosmo_arguments['N_ur'] = 2.0328
+data.cosmo_arguments['N_ncdm'] = 1
+data.cosmo_arguments['m_ncdm'] = 0.06
+data.cosmo_arguments['T_ncdm'] = 0.71611
+
+# EFT nuisance parameters
+data.parameters['b1']  = [2.,   0.,   4., 0.5, 1,  'nuisance']
+data.parameters['bt2']  = [0.,   -1.,   1., 1., 1,  'nuisance']
+data.parameters['bG2']  = [0.,   -1.,   1., 1., 1,  'nuisance']
+
+# Derived parameter list
+data.parameters['Omega_m']         = [0, None, None, 0,     1,   'derived']
+data.parameters['A_s']             = [0, None, None, 0,  1e-9,   'derived']
+data.parameters['sigma8']          = [0, None, None, 0,     1,   'derived']
+
+# Other cosmo parameters (fixed parameters, precision parameters, etc.)
+data.cosmo_arguments['sBBN file'] = data.path['cosmo']+'/bbn/sBBN.dat'
+data.cosmo_arguments['k_pivot'] = 0.05
+
+data.cosmo_arguments['output'] = 'mPk'
+data.cosmo_arguments['P_k_max_h/Mpc'] = 1.
+
+#------ Mcmc parameters ----
+# Number of steps taken, by default (overwritten by the -N command)
+data.N = 10
+# Number of accepted steps before writing to file the chain. Larger means less
+# access to disc, but this is not so much time consuming.
+data.write_step = 10
+
+
+#-----Likelihood-bbn_prior-----
+bbn_prior.mean = 0.02268
+bbn_prior.sigma = 0.00038
+
+
+#-----Likelihood-eftboss-----
+eftboss.data_directory = '/global/cfs/cdirs/des/mcraveri/projects/eftoflss/montepython_public/data'
+eftboss.config_file = 'eftboss/config/cmass_ec_std.yaml'
+eftboss.use_nuisance = ['b1', 'bt2', 'bG2']
+
+
+#-----------Cosmological-arguments---------
+data.cosmo_arguments.update({'N_ur': 2.0328, 'N_ncdm': 1, 'm_ncdm': 0.06, 'T_ncdm': 0.71611, 'sBBN file': '/global/homes/m/mcraveri/projects/eftoflss/class_public-3.2.1/bbn/sBBN.dat', 'k_pivot': 0.05, 'output': 'mPk', 'P_k_max_h/Mpc': 10.0, 'z_max_pk': 0.57})
+
+
+#--------Default-Configuration------
+data.path['root']	= '/global/cfs/cdirs/des/mcraveri/projects/eftoflss/montepython_public'
+data.path['MontePython']	= '/global/cfs/cdirs/des/mcraveri/projects/eftoflss/montepython_public/montepython'
+data.path['data']	= '/global/cfs/cdirs/des/mcraveri/projects/eftoflss/montepython_public/data'
+data.path['cosmo']	= '/global/homes/m/mcraveri/projects/eftoflss/class_public-3.2.1'
