@@ -44,7 +44,7 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
     if print_improvement:
         with np.printoptions(precision=2, suppress=True):
             if any(eig < 1. for eig in KL_eig):
-                print('Improvement factor over the prior:\n', KL_eig)
+                print('Improvement factor over the prior:', KL_eig)
                 print('Discarding error units due to negative values.')
             else:
                 print('Improvement factor over the prior in E.U.:\n', np.sqrt(KL_eig-1))
@@ -79,7 +79,7 @@ def plot_frac_fisher(prior_chain=MCSamples(), posterior_chain=MCSamples(), param
         labels = [str(t+1)+'\n'+str(l) for t,l in zip(ticks, np.round(KL_eig, 2))]
     else:
         labels = [str(t+1)+'\n'+str(l) for t,l in zip(ticks, np.round(np.sqrt(KL_eig-1), 2))]
-    plt.xticks(ticks, labels, horizontalalignment='center');
+    plt.xticks(ticks, labels, horizontalalignment='center', rotation=30);
     labels = ['$'+posterior_chain.getParamNames().parWithName(name).label+'$' for name in KL_param_names]
     plt.yticks(ticks, labels, horizontalalignment='right');
 
@@ -93,7 +93,7 @@ from python_scripts.prior import *
 #   - chain_name = prefix used to name the chain files
 #   - ignore_rows = burn-in fraction 
 #   - name_tag = name of the prior chain to be displayed on the plots
-def full_prior(n=10000, root_dir='', chain_name='', config_name='', ignore_rows=0.3, name_tag=''):
+def full_prior(n=10000, root_dir='', chain_name='', config_name='', ignore_rows=0.3, name_tag='', include_class=True):
     prior = priorChain(n=n, root_dir=root_dir, chain_name=chain_name)
     # If the cosmo_prior chain has already been computed and saved, there's no need to do it again
     # Remember that, if you change the parameter or the configuration file, the prior distribution
@@ -102,7 +102,7 @@ def full_prior(n=10000, root_dir='', chain_name='', config_name='', ignore_rows=
     if os.path.exists(root_dir+'cosmo_prior_.txt'):
         pass
     else:
-        cosmo_prior = prior.get_dv_prior(include_class=True)
+        cosmo_prior = prior.get_dv_prior(include_class=include_class)
         cosmo_prior.saveAsText(root=root_dir+'/cosmo_prior_')
 
     try:

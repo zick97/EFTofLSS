@@ -242,7 +242,7 @@ class priorChain():
                 if dist == 'gauss':
                     mean = file['eft_prior'][eft_name]['mean'][index]
                     sigma = file['eft_prior'][eft_name]['range'][index]
-                    index += 1
+                    if len(file['eft_prior'][eft_name]['mean']) - 1 > index: index += 1
                     chain_array.append(self.build_gauss(num_array, mean=mean, sigma=sigma))
         nuisance_prior = MCSamples(samples=np.transpose(chain_array), 
                                     names=self.nuisance_names, labels=self.nuisance_labels,

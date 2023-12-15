@@ -16,7 +16,7 @@ data.over_sampling=[1, 4]
 
 # Cosmological parameters list
 data.parameters['omega_b']      = [ 2.268, 2.068, 2.468, 0.05, 0.01, 'cosmo']
-#data.prior['omega_b']          = ['gaus', 0.02268, 0.00038]
+#data.prior['omega_b']          = ['gaussian', 0.02268, 0.00038]
 data.parameters['omega_cdm']    = [ 0.120, 0.080, 0.160, 0.01,    1, 'cosmo']
 #data.prior['omega_cdm']        = ['flat']
 data.parameters['h']            = [ 0.675, 0.635, 0.715, 0.01,    1, 'cosmo']
