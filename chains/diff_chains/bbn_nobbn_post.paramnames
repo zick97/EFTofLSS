@@ -1,0 +1,17 @@
+delta_omega_b	\Delta 10^{-2}\omega{}_{b }
+delta_omega_cdm	\Delta \omega{}_{cdm }
+delta_h	\Delta h
+delta_ln10^{10}A_s	\Delta ln10^{10}A_{s }
+delta_n_s	\Delta n_{s }
+delta_b1_hN	\Delta b1_{hN }
+delta_c2_hN	\Delta c2_{hN }
+delta_b1_hS	\Delta b1_{hS }
+delta_c2_hS	\Delta c2_{hS }
+delta_b1_lN	\Delta b1_{lN }
+delta_c2_lN	\Delta c2_{lN }
+delta_b1_lS	\Delta b1_{lS }
+delta_c2_lS	\Delta c2_{lS }
+delta_Omega_m	\Delta \Omega{}_{m }
+delta_A_s	\Delta 10^{-9}A_{s }
+delta_sigma8	\Delta \sigma_8
+delta_mode*	\Delta \mathcal{f}(n_s, \Omega_m, \sigma_8)
